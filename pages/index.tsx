@@ -6,26 +6,77 @@ import styles from '../styles/Home.module.css';
 
 const c = initContract();
 
-const contract = c.router({
-  test: {
+const pokemonApi = c.router({
+  getAllPokemon: {
     method: 'GET',
-    path: '/test',
+    path: '/pokemon',
+    query: c.body<{
+      limit: number;
+    }>(),
+    responses: {
+      200: c.response<{
+        count: number;
+        next: string;
+        previous: string | null;
+        results: {
+          name: string;
+          url: string;
+        }[];
+      }>(),
+    },
+  },
+  getPokemon: {
+    method: 'GET',
+    path: '/pokemon/:id',
     query: null,
     responses: {
-      200: c.response<null>(),
+      200: c.response<{
+        id: number;
+        name: string;
+        base_experience: number;
+        height: number;
+        is_default: boolean;
+        order: number;
+        weight: number;
+      }>(),
     },
   },
 });
 
-const queryClient = initQueryClient(contract, {
-  baseUrl: 'http://localhost:3000',
+const queryClient = initQueryClient(pokemonApi, {
+  baseUrl: 'https://pokeapi.co/api/v2',
   baseHeaders: {},
 });
 
-export default function Home() {
-  const query = queryClient.test.useQuery(['test'], { query: null });
+const PokemonCard = ({ url }: { url: string }) => {
+  const id = url.split('/').slice(-2)[0];
 
-  console.log(query);
+  const query = queryClient.getPokemon.useQuery(
+    ['pokemon', url],
+    { params: { id: id as string } },
+    { staleTime: Infinity }
+  );
+
+  const pokemon = query.data?.status === 200 ? query.data.body : null;
+
+  return (
+    <img
+      height={200}
+      width={200}
+      style={{ imageRendering: 'pixelated' }}
+      src={pokemon?.sprites?.front_default}
+    />
+  );
+};
+
+export default function Home() {
+  const query = queryClient.getAllPokemon.useQuery(
+    ['test'],
+    { query: { limit: 10 } },
+    { staleTime: Infinity }
+  );
+
+  const pokemon = query.data?.status === 200 ? query.data.body : null;
 
   return (
     <div className={styles.container}>
@@ -46,35 +97,12 @@ export default function Home() {
         </p>
 
         <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h2>Documentation &rarr;</h2>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h2>Learn &rarr;</h2>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/canary/examples"
-            className={styles.card}
-          >
-            <h2>Examples &rarr;</h2>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.card}
-          >
-            <h2>Deploy &rarr;</h2>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+          {query.data?.body?.results.map((item) => (
+            <a href="https://nextjs.org/docs" className={styles.card}>
+              <h2>{item.name}</h2>
+              <PokemonCard url={item.url} />
+            </a>
+          ))}
         </div>
       </main>
 
