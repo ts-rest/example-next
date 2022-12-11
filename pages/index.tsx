@@ -38,7 +38,7 @@ export default function Home() {
 
         <div className={styles.grid}>
           {query.data?.body?.results.map((item) => (
-            <div className={styles.card}>
+            <div className={styles.card} key={item.url}>
               <h2>{item.name}</h2>
               <PokemonCard url={item.url} />
             </div>

@@ -1,6 +1,7 @@
 import { initContract } from '@ts-rest/core';
 
 const c = initContract();
+
 export const pokemonApi = c.router({
   getAllPokemon: {
     method: 'GET',
