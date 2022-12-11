@@ -4,7 +4,7 @@ export const PokemonCard = ({ url }: { url: string }) => {
   const id = url.split('/').slice(-2)[0];
 
   const query = queryClient.getPokemon.useQuery(
-    ['pokemon', url],
+    ['pokemon', id],
     { params: { id: id as string } },
     { staleTime: Infinity }
   );
