@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@tanstack/react-query": "4.19.1",
+    "@tanstack/react-query-devtools": "^4.19.1",
     "@ts-rest/core": "3.10.2",
     "@ts-rest/react-query": "3.10.2",
     "@types/node": "18.11.13",

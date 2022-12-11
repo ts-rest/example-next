@@ -1,77 +1,18 @@
-import { initContract } from '@ts-rest/core';
 import { initQueryClient } from '@ts-rest/react-query';
 import Head from 'next/head';
 import Image from 'next/image';
+import { PokemonCard } from '../components/PokemonCard';
+import { pokemonApi } from '../pokeApi';
 import styles from '../styles/Home.module.css';
 
-const c = initContract();
-
-const pokemonApi = c.router({
-  getAllPokemon: {
-    method: 'GET',
-    path: '/pokemon',
-    query: c.body<{
-      limit: number;
-    }>(),
-    responses: {
-      200: c.response<{
-        count: number;
-        next: string;
-        previous: string | null;
-        results: {
-          name: string;
-          url: string;
-        }[];
-      }>(),
-    },
-  },
-  getPokemon: {
-    method: 'GET',
-    path: '/pokemon/:id',
-    query: null,
-    responses: {
-      200: c.response<{
-        id: number;
-        name: string;
-        base_experience: number;
-        height: number;
-        is_default: boolean;
-        order: number;
-        weight: number;
-      }>(),
-    },
-  },
-});
-
-const queryClient = initQueryClient(pokemonApi, {
+export const queryClient = initQueryClient(pokemonApi, {
   baseUrl: 'https://pokeapi.co/api/v2',
   baseHeaders: {},
 });
 
-const PokemonCard = ({ url }: { url: string }) => {
-  const id = url.split('/').slice(-2)[0];
-
-  const query = queryClient.getPokemon.useQuery(
-    ['pokemon', url],
-    { params: { id: id as string } },
-    { staleTime: Infinity }
-  );
-
-  const pokemon = query.data?.status === 200 ? query.data.body : null;
-
-  return (
-    <img
-      height={200}
-      width={200}
-      style={{ imageRendering: 'pixelated' }}
-      src={pokemon?.sprites?.front_default}
-    />
-  );
-};
-
 export default function Home() {
   const query = queryClient.getAllPokemon.useQuery(
-    ['test'],
+    ['pokemon'],
     { query: { limit: 10 } },
     { staleTime: Infinity }
   );
@@ -88,20 +29,19 @@ export default function Home() {
 
       <main className={styles.main}>
         <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
+          Next.js with <a href="https://ts-rest.com">ts-rest!</a>
         </h1>
 
         <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.tsx</code>
+          Example of <code>@ts-rest/react-query</code> with the PokeAPI!
         </p>
 
         <div className={styles.grid}>
           {query.data?.body?.results.map((item) => (
-            <a href="https://nextjs.org/docs" className={styles.card}>
+            <div className={styles.card}>
               <h2>{item.name}</h2>
               <PokemonCard url={item.url} />
-            </a>
+            </div>
           ))}
         </div>
       </main>
